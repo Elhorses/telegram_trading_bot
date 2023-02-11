@@ -193,6 +193,7 @@ func (d *Dispatcher) MaxUsage() int {
 }
 
 // Start to handle incoming updates.
+// This is a blocking method; it should be called as a goroutine, such that it can receive incoming updates.
 func (d *Dispatcher) Start(b *gotgbot.Bot, updates chan json.RawMessage) {
 	go d.startDispatcherMetrics()
 
@@ -244,7 +245,9 @@ func (d *Dispatcher) startDispatcherMetrics() {
 // Stop waits for all currently processing updates to finish, and then returns.
 func (d *Dispatcher) Stop() {
 	d.waitGroup.Wait()
-	close(d.limiter)
+	if d.limiter != nil {
+		close(d.limiter)
+	}
 }
 
 // AddHandler adds a new handler to the dispatcher. The dispatcher will call CheckUpdate() to see whether the handler
